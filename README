@@ -5,7 +5,3 @@ cd src && make
 Help
 ====
 ./telestd -h
-
-Notes
-=====
-Sometimes strange segfault is occured.

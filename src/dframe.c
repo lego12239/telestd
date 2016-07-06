@@ -132,30 +132,40 @@ int dframe_read(int fd, struct dataframe *dframe)
 	
 	dbg_out("dframe_read(): databuf=%p, databuf_ptr=%p\n",
 		dframe->buf, dframe->ptr);
-	cnt = DATAFRAME_SIZE * 2 - (dframe->ptr - dframe->buf);
-	n = readn(fd, dframe->ptr, cnt);
-	if (n == -1)
-		return -1;
-	/* Can this situation really be occured? */
-	if (n < cnt)
-		return 0;
-	dbg_out("dframe_read(): read %d bytes\ndatabuf contains:\n", n);
-	dbg_dump_data(dframe->buf, DATAFRAME_SIZE * 2);
+	/* read input until we get a complete data frame */
+	do {
+		cnt = DATAFRAME_SIZE * 2 - (dframe->ptr - dframe->buf);
+		n = readn(fd, dframe->ptr, cnt);
+		if (n == -1)
+			return -1;
+		/* Can this situation really be occured? */
+		if (n < cnt)
+			return 0;
+		dbg_out("dframe_read(): read %d bytes\ndatabuf contains:\n", n);
+		dbg_dump_data(dframe->buf, DATAFRAME_SIZE * 2);
 	
-	/* Find dataframe start */
-	df_start = sig_search(dframe->buf, DATAFRAME_SIZE * 2, dataframe_ssig, 5);
-	dbg_out("dframe_read(): df_start=%p\n", df_start);
-	if (!df_start) {
-		fprintf(stderr, "start signature can't be found\n");
-		return -1;
-	}
+		/* Find dataframe start */
+		df_start = sig_search(dframe->buf, DATAFRAME_SIZE * 2,
+		  dataframe_ssig, 5);
+		dbg_out("dframe_read(): df_start=%p\n", df_start);
+		if (!df_start) {
+			/* HERE MUST BE LOGGING INSTEAD OF THIS */
+			fprintf(stderr, "start signature can't be found\n");
+			return -2;
+		}
+		n = DATAFRAME_SIZE * 2 - (df_start - dframe->buf);
+		if (n < DATAFRAME_SIZE) {
+			memmove(dframe->buf, df_start, n);
+			dframe->ptr = dframe->buf + n;
+		}
+	} while (n < DATAFRAME_SIZE);
 	
 	dframe_parse(df_start + 5, dframe);
 	dbg_out("qq\n");
 	dbg_dump_data(dframe->lines[0].snd, 40);
 	
 	df_start += DATAFRAME_SIZE;
-	n = DATAFRAME_SIZE * 2 - (df_start - dframe->buf);
+	n -=  DATAFRAME_SIZE;
 	memmove(dframe->buf, df_start, n);
 	dframe->ptr = dframe->buf + n;
 	

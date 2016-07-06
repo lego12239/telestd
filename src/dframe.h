@@ -7,7 +7,7 @@
 #define LINES_CNT 4
 #define DATAFRAME_SIZE 165
 #define ACTIVITY_THRESHOLD 8
-#define SPEAK_TIMEOUT 3
+#define SPEAK_TIMEOUT 5
 
 struct dataframe {
 	char buf[DATAFRAME_SIZE * 2 + 1];

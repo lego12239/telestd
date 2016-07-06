@@ -607,8 +607,8 @@ int main(int argc, char **argv)
 				else
 					close_dst(i);
 		}
-		if (n == -1)
-			log_msg(LOG_ERR, "read error: %s\n", strerror(errno));
+		if (n < 0)
+			log_msg(LOG_ERR, "read error(%d): %s\n", n, strerror(errno));
 		close(fd);
 	} while (src_is_tty);
 	

@@ -16,7 +16,7 @@
 #include "dframe.h"
 
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
 #define PATH_MAX 1024
 #define DST_FNAME_LEN 22
